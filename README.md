@@ -9,4 +9,7 @@ Dependencies:
 
 [ws4py](https://github.com/Lawouach/WebSocket-for-Python)
     
-    
+Get started
+------------
+
+Rename config.json.example to config.json and change the settings.

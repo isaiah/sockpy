@@ -1,0 +1,4 @@
+{"host": "localhost:8080", 
+ "address": "all",
+ "socks": 10
+ }
