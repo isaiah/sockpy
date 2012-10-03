@@ -5,6 +5,9 @@ import sys
 import json
 
 class Tester(object):
+  """
+  Use this class to flood your vertx sockjs server with websocket connections
+  """
   def __init__(self, host, address, max_conn):
     self.interval = 0.01
     self.host = host
