@@ -67,7 +67,7 @@ class EventBus(REventTarget):
   def checkSpecified(self,paramName, paramType, param=None, optional=False):
     if not optional and not param:
       raise Exception("Parameter " + paramName + " must be specified")
-    if param and type(param) != paramType:
+    if param and type(param).__name__ != paramType:
       raise Exception("Parameter " + paramName + " must be of type " + paramType)    
 
   def connect(self):
@@ -75,7 +75,7 @@ class EventBus(REventTarget):
   def close(self):
     self.checkOpen()
     self.state = EventBus.CLOSING
-    self.sockJSConn.close()
+    self.sockConn.close()
   def readyState(self):
     return self.state
     
@@ -86,8 +86,8 @@ class EventBus(REventTarget):
     self.sendOrPub("publish", address, message, replyHandler)
   
   def registerHandler(self,address,handler):
-    print "registerHandler"
-    self.checkSpecified("address", 'string', address)
+    print "registerHandler" 
+    self.checkSpecified("address", 'str', address)
     self.checkSpecified("handler", 'function', handler)
     self.checkOpen()
     handlers = None
@@ -97,7 +97,7 @@ class EventBus(REventTarget):
       handlers = [handler]
       self.handlerMap[address] = handlers
       msg = { "type":"register", "address": address }
-      self.sockJSConn.send(json.dumps(msg))
+      self.sockConn.send(json.dumps(msg))
     else:
       handlers.append(handler)
 
@@ -113,7 +113,7 @@ class EventBus(REventTarget):
         handlers.remove(handler)
       if len(handlers)==0:
         msg = { "type":"unregister", "address": address }
-        self.sockJSConn.send(json.dumps(msg))
+        self.sockConn.send(json.dumps(msg))
         del handlerMap[address]
 
   def sendOrPub(self, sendOrPub, address, message, replyHandler=None):
@@ -133,14 +133,21 @@ class EventBus(REventTarget):
 
 if __name__ == "__main__":
   import time
-  eb = EventBus("http://localhost:8080/eventbus")
+  import sys
+  host = sys.argv[0]
+  address = sys.argv[1]
+  eb = EventBus("http://{}/eventbus".format(host))
   def onopen(message):
     print "onopen"
+    def handler(message, replyTo):
+      print(message)
+    eb.registerHandler(address, handler)
+
     def replyHandler(reply, replier=None):
-      eb.send("vertx.basicauthmanager.login", {"username":"dev","password":"dev"}, replyHandler)
+      #eb.send("vertx.basicauthmanager.login", {"username":"dev","password":"dev"}, replyHandler)
       print "onreply"
       print reply
-    eb.send("vertx.basicauthmanager.login", {"username":"dev","password":"dev"}, replyHandler)
+    #eb.send("vertx.basicauthmanager.login", {"username":"dev","password":"dev"}, replyHandler)
   eb.addEventListener("open", onopen)
   eb.connect()
 
